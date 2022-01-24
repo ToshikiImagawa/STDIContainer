@@ -9,6 +9,6 @@ namespace STDIC.Internal
         public Type[] InjectedTypes { get; }
         public Type InstanceType { get; }
         public ScopeType ScopeType { get; }
-        public object GetInstance(IResolver resolver);
+        public object GetInstance(DiContainer container);
     }
 }

@@ -23,12 +23,13 @@ namespace STDIC.Internal
 
         public ManagedHashTable(EqualityComparer<TKey> equalityComparer)
         {
-            _entries = Array.Empty<Entry>();
+            _entries = new Entry[16];
             _equalityComparer = equalityComparer;
         }
 
         public ManagedHashTable(IEnumerable<(TKey, TValue)> values, EqualityComparer<TKey> equalityComparer)
         {
+            _entries = new Entry[16];
             foreach (var (key, value) in values)
             {
                 TryAdd(key, value);

@@ -1,6 +1,7 @@
 // Copyright (c) 2021 COMCREATE. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -15,14 +16,17 @@ namespace STDIC.Internal.Reflection
             BindingFlags.NonPublic |
             BindingFlags.FlattenHierarchy;
 
-        public static ConstructorInfo[] GetAllInjectConstructors([NotNull] this Type self)
+        public static IEnumerable<ConstructorInfo> GetAllInjectConstructors([NotNull] this Type self)
         {
-            return self.GetConstructors()
-                .Where(info => info.GetCustomAttribute<InjectAttribute>() != null)
-                .ToArray();
+            return self.GetAllConstructors().Where(info => info.GetCustomAttribute<InjectAttribute>() != null);
         }
 
-        public static ConstructorInfo[] GetConstructors([NotNull] this Type self)
+        public static ConstructorInfo GetDefaultConstructors([NotNull] this Type self)
+        {
+            return self.GetConstructor(Type.EmptyTypes);
+        }
+
+        private static IEnumerable<ConstructorInfo> GetAllConstructors([NotNull] this Type self)
         {
             return self.GetConstructors(ALL_INSTANCE_BINDING_FLAGS);
         }

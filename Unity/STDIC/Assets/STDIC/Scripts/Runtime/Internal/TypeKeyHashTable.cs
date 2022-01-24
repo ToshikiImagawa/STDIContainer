@@ -12,6 +12,10 @@ namespace STDIC.Internal
             return left == right;
         }
 
+        public TypeKeyHashTable()
+        {
+        }
+
         public TypeKeyHashTable(IEnumerable<(Type, TValue)> values) : base(values)
         {
         }
