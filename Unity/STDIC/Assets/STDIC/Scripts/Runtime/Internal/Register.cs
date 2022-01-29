@@ -5,7 +5,7 @@ using STDIC.Internal.Registrations;
 
 namespace STDIC.Internal
 {
-    internal class Register<TInstance> : IRegisterType<TInstance>
+    internal class Register<TInstanceType> : IRegisterType<TInstanceType>
     {
         private Lazy<IRegistration> _registrationLazy;
         private RegisterInfo _registerInfo;
@@ -21,23 +21,25 @@ namespace STDIC.Internal
             _resolver = resolver;
             _registerInfo = new RegisterInfo(
                 injectedTypes,
-                typeof(TInstance),
+                typeof(TInstanceType),
                 ScopeType.Transient,
                 true
             );
-            _registrationLazy = new Lazy<IRegistration>(() => new NewRegistration(_registerInfo, _resolver));
+            _registrationLazy =
+                new Lazy<IRegistration>(() => new NewRegistration<TInstanceType>(_registerInfo, _resolver));
         }
 
         public Register(IResolver resolver)
         {
             _resolver = resolver;
             _registerInfo = new RegisterInfo(
-                new[] { typeof(TInstance) },
-                typeof(TInstance),
+                new[] { typeof(TInstanceType) },
+                typeof(TInstanceType),
                 ScopeType.Transient,
                 true
             );
-            _registrationLazy = new Lazy<IRegistration>(() => new NewRegistration(_registerInfo, _resolver));
+            _registrationLazy =
+                new Lazy<IRegistration>(() => new NewRegistration<TInstanceType>(_registerInfo, _resolver));
         }
 
         public IRegister Lazy()
@@ -86,20 +88,21 @@ namespace STDIC.Internal
 
         public IRegisterScope FromNew()
         {
-            _registrationLazy = new Lazy<IRegistration>(() => new NewRegistration(_registerInfo, _resolver));
+            _registrationLazy =
+                new Lazy<IRegistration>(() => new NewRegistration<TInstanceType>(_registerInfo, _resolver));
             return this;
         }
 
-        public IRegisterScope FromInstance(TInstance instance)
+        public IRegisterScope FromInstance(TInstanceType instance)
         {
             _registrationLazy = new Lazy<IRegistration>(() => new InstanceRegistration(_registerInfo, instance));
             return this;
         }
 
-        public IRegisterScope FromFactory(IFactory<TInstance> factory)
+        public IRegisterScope FromFactory(IFactory<TInstanceType> factory)
         {
             _registrationLazy =
-                new Lazy<IRegistration>(() => new FactoryRegistration<TInstance>(_registerInfo, factory));
+                new Lazy<IRegistration>(() => new FactoryRegistration<TInstanceType>(_registerInfo, factory));
             return this;
         }
     }

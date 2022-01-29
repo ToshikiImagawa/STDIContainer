@@ -2,35 +2,52 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
 
 namespace STDIC.Internal.Reflection
 {
     internal class ReflectionResolver : IResolver
     {
-        private readonly TypeKeyHashTable<ConstructorInfo> _constructorInfoHashTable =
-            new TypeKeyHashTable<ConstructorInfo>();
-
-        public Type[] GetParameterTypes(Type instanceType)
+        public IConstructor<T> GetConstructor<T>()
         {
-            return GetConstructorInfo(instanceType).GetParameters().Select(info => info.ParameterType).ToArray();
+            return ConstructorCache<T>.Constructor;
         }
 
-        public Func<object[], object> Constructor(Type instanceType)
+        private static class ConstructorCache<T>
         {
-            return GetConstructorInfo(instanceType).Invoke;
-        }
+            public static readonly IConstructor<T> Constructor;
 
-        private ConstructorInfo GetConstructorInfo(Type instanceType)
-        {
-            if (_constructorInfoHashTable.TryGetValue(instanceType, out var cacheConstructorInfo))
+            static ConstructorCache()
             {
-                return cacheConstructorInfo;
+                Constructor = new ReflectionConstructor<T>();
+            }
+        }
+
+        private class ReflectionConstructor<T> : IConstructor<T>
+        {
+            private readonly Type[] _parameterTypes;
+            private readonly Func<object[], object> _constructor;
+
+            public ReflectionConstructor()
+            {
+                var instanceType = typeof(T);
+                var constructorInfo = instanceType.GetAllInjectConstructors().FirstOrDefault() ??
+                                      instanceType.GetDefaultConstructors() ??
+                                      throw new InvalidOperationException(
+                                          $"{instanceType.FullName} is not found inject constructor."
+                                      );
+                _parameterTypes = constructorInfo.GetParameters().Select(info => info.ParameterType).ToArray();
+                _constructor = constructorInfo.Invoke;
             }
 
-            var constructorInfo = instanceType.GetAllInjectConstructors().FirstOrDefault() ?? instanceType.GetDefaultConstructors();
-            _constructorInfoHashTable.TryAdd(instanceType, constructorInfo);
-            return constructorInfo;
+            public Type[] GetParameterTypes()
+            {
+                return _parameterTypes;
+            }
+
+            public T New(object[] parameters)
+            {
+                return (T)_constructor(parameters);
+            }
         }
     }
 }

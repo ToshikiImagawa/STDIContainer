@@ -18,5 +18,10 @@ namespace SampleApp
             var listViewModel = new ToDoListViewModel(service);
             toDoListDisplay.Inject(listViewModel);
         }
+
+        private void OnDestroy()
+        {
+            ToDoContainer.Instance.Container.Dispose();
+        }
     }
 }

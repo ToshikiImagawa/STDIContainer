@@ -7,6 +7,7 @@ using SampleApp.Utils;
 
 namespace SampleApp.Infrastructure.Repository
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class TodoEventRepository : ITodoEventRepository
     {
         private readonly Subject<ToDo> _updateSubject = new Subject<ToDo>();

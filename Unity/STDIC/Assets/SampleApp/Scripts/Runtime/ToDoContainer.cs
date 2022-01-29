@@ -21,11 +21,11 @@ namespace SampleApp
 
         private ToDoContainer()
         {
-            var builder = DiContainer.CreateBuilder();
+            var builder = DiContainer.CreateBuilder<GeneratedResolver>();
             builder.Register<IToDoService, ToDoService>().FromNew();
             builder.Register<IToDoRepository, ToDoLocalRepository>().FromNew().AsSingle();
             builder.Register<ITodoEventRepository, TodoEventRepository>().FromNew().AsSingle();
-            builder.Register<LocalDataBaseHelper>().FromInstance(new LocalDataBaseHelper()).AsSingle();
+            builder.Register<LocalDataBaseHelper>().FromNew().AsSingle();
             Container = builder.Build();
         }
     }

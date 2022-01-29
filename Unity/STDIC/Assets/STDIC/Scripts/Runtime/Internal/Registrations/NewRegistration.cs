@@ -5,10 +5,10 @@ using System.Linq;
 
 namespace STDIC.Internal.Registrations
 {
-    internal sealed class NewRegistration : IRegistration
+    internal sealed class NewRegistration<TInstanceType> : IRegistration
     {
         private readonly RegisterInfo _registerInfo;
-        private readonly IResolver _resolver;
+        private readonly Lazy<IConstructor<TInstanceType>> _constructorLazy;
 
         public NewRegistration(
             RegisterInfo registerInfo,
@@ -16,7 +16,7 @@ namespace STDIC.Internal.Registrations
         )
         {
             _registerInfo = registerInfo;
-            _resolver = resolver;
+            _constructorLazy = new Lazy<IConstructor<TInstanceType>>(resolver.GetConstructor<TInstanceType>);
         }
 
         public Type[] InjectedTypes => _registerInfo.InjectedTypes;
@@ -25,8 +25,8 @@ namespace STDIC.Internal.Registrations
 
         public object GetInstance(DiContainer container)
         {
-            return _resolver.Constructor(_registerInfo.InstanceType)
-                .Invoke(_resolver.GetParameterTypes(_registerInfo.InstanceType).Select(container.Resolve).ToArray());
+            var constructor = _constructorLazy.Value;
+            return constructor.New(constructor.GetParameterTypes().Select(container.Resolve).ToArray());
         }
     }
 }
