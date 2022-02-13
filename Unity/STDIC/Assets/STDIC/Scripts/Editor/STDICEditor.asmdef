@@ -1,6 +1,6 @@
 {
     "name": "STDICEditor",
-    "rootNamespace": "",
+    "rootNamespace": "STDICEditor",
     "references": [],
     "includePlatforms": [
         "Editor"

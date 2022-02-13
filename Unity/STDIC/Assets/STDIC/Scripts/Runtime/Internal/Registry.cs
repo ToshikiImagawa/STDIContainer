@@ -21,6 +21,8 @@ namespace STDIC.Internal
             );
         }
 
+        public IEnumerable<IRegistration> Registrations => _registrationHashTable.Values;
+
         public bool TryGetRegistration(Type contractType, out IRegistration registration)
         {
             return _registrationHashTable.TryGetValue(contractType, out registration);

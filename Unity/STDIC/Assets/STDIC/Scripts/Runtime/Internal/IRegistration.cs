@@ -13,11 +13,6 @@ namespace STDIC.Internal
         public IEnumerable<Type> ContractTypes { get; }
 
         /// <summary>
-        /// インスタンスの型
-        /// </summary>
-        public Type InstanceType { get; }
-
-        /// <summary>
         /// 依存している型一覧
         /// </summary>
         public IEnumerable<Type> DependentTypes { get; }
