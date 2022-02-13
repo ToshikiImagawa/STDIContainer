@@ -7,18 +7,18 @@ namespace STDIC.Internal
     internal readonly struct RegisterInfo
     {
         public RegisterInfo(
-            Type[] injectedTypes,
+            Type[] contractTypes,
             Type instanceType,
             ScopeType scopeType,
             bool isLazy)
         {
-            InjectedTypes = injectedTypes;
+            ContractTypes = contractTypes;
             InstanceType = instanceType;
             ScopeType = scopeType;
             IsLazy = isLazy;
         }
 
-        public Type[] InjectedTypes { get; }
+        public Type[] ContractTypes { get; }
         public Type InstanceType { get; }
         public ScopeType ScopeType { get; }
         public bool IsLazy { get; }

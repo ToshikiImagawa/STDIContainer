@@ -1,7 +1,9 @@
 // Copyright (c) 2022 COMCREATE. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace STDIC.Internal.Reflection
 {
@@ -10,6 +12,35 @@ namespace STDIC.Internal.Reflection
         public IConstructor<T> GetConstructor<T>()
         {
             return ConstructorCache<T>.Constructor;
+        }
+
+        public IEnumerable<Type> HasInjectConstructorTypes
+        {
+            get
+            {
+                foreach (var hasInjectConstructorType in HasInjectConstructorTypePairs)
+                {
+                    var (instanceType, _) = hasInjectConstructorType;
+                    yield return instanceType;
+                }
+            }
+        }
+
+        private (Type, ConstructorInfo)[] _hasInjectConstructorTypePairs;
+
+        private IEnumerable<(Type, ConstructorInfo)> HasInjectConstructorTypePairs
+        {
+            get
+            {
+                if (_hasInjectConstructorTypePairs != null) return _hasInjectConstructorTypePairs;
+                _hasInjectConstructorTypePairs = (
+                    from type in AppDomain.CurrentDomain.GetAssemblies().SelectMany(asm => asm.GetTypes())
+                    let constructorInfo = type.GetAllInjectConstructors().FirstOrDefault()
+                    where constructorInfo != null
+                    select (type, constructorInfo)
+                ).ToArray();
+                return _hasInjectConstructorTypePairs;
+            }
         }
 
         private static class ConstructorCache<T>
@@ -31,7 +62,6 @@ namespace STDIC.Internal.Reflection
             {
                 var instanceType = typeof(T);
                 var constructorInfo = instanceType.GetAllInjectConstructors().FirstOrDefault() ??
-                                      instanceType.GetDefaultConstructors() ??
                                       throw new InvalidOperationException(
                                           $"{instanceType.FullName} is not found inject constructor."
                                       );

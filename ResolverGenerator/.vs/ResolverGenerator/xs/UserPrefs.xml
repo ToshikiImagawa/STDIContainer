@@ -1,0 +1,31 @@
+﻿<Properties StartupConfiguration="{79BBCBD2-3D09-41C7-92E0-EE7F5AFFC9AB}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="src/ResolverGenerator.GeneratorCore/Generator/ConstructorTemplate.tt">
+    <Files>
+      <File FileName="src/ResolverGenerator.Generator/PseudoCompilation.cs" Line="1" Column="1" />
+      <File FileName="src/ResolverGenerator.Generator/AssemblyInfo.cs" Line="1" Column="1" />
+      <File FileName="src/ResolverGenerator.Generator/ResolverCompiler.cs" Line="1" Column="1" />
+      <File FileName="src/ResolverGenerator.GeneratorCore/Generator/ConstructorTemplate.tt" Line="91" Column="1" />
+      <File FileName="src/ResolverGenerator.GeneratorCore/Generator/ResolverTemplate.tt" Line="10" Column="38" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="ResolverGenerator" expanded="True">
+            <Node name="ResolverGenerator.GeneratorCore" expanded="True">
+              <Node name="Generator" expanded="True">
+                <Node name="ConstructorTemplate.tt" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.ResolverGenerator.Generator PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

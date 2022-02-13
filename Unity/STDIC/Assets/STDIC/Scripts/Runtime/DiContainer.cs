@@ -74,24 +74,14 @@ namespace STDIC
             }
         }
 
-        public static IBuilder CreateBuilder<TResolver>() where TResolver : IResolver, new()
-        {
-            return new Builder<TResolver>();
-        }
-
         public static IBuilder CreateBuilder()
         {
-            return new Builder<ReflectionResolver>();
-        }
-
-        public IBuilder CreateChildBuilder<TResolver>() where TResolver : IResolver, new()
-        {
-            return new Builder<TResolver>(_parentContainer);
+            return new Builder();
         }
 
         public IBuilder CreateChildBuilder()
         {
-            return new Builder<ReflectionResolver>(_parentContainer);
+            return new Builder(this);
         }
 
         private object Resolve([NotNull] IRegistration registration)
@@ -119,16 +109,28 @@ namespace STDIC
         }
 
         [NotNull]
-        private IRegistration GetRegistration([NotNull] Type type)
+        private IRegistration GetRegistration([NotNull] Type contractType)
         {
             var container = this;
             while (container != null)
             {
-                if (container._registry.TryGetRegistration(type, out var registration)) return registration;
+                if (container._registry.TryGetRegistration(contractType, out var registration)) return registration;
                 container = container._parentContainer;
             }
 
             throw new Exception();
+        }
+
+        private bool ContainsRegistration([NotNull] Type contractType)
+        {
+            var container = this;
+            while (container != null)
+            {
+                if (container._registry.Contains(contractType)) return true;
+                container = container._parentContainer;
+            }
+
+            return false;
         }
 
         public void Dispose()
@@ -155,27 +157,19 @@ namespace STDIC
             }
         }
 
-        private class Builder<TResolver> : IBuilder where TResolver : IResolver, new()
+        private class Builder : IBuilder
         {
-            [NotNull] private readonly IResolver _resolver;
             [CanBeNull] private readonly DiContainer _parentContainer;
             private readonly List<IRegister> _registers = new List<IRegister>();
 
-            public Builder(DiContainer parentContainer)
+            public Builder(DiContainer parentContainer = null)
             {
-                _resolver = new TResolver();
                 _parentContainer = parentContainer;
             }
 
-            public Builder()
+            public IRegisterType<TInstanceType> Register<TInstanceType>(Type[] contractTypes)
             {
-                _resolver = new TResolver();
-                _parentContainer = null;
-            }
-
-            public IRegisterType<TInstanceType> Register<TInstanceType>(Type[] injectedTypes)
-            {
-                var register = new Register<TInstanceType>(_resolver, injectedTypes);
+                var register = new Register<TInstanceType>(contractTypes);
                 _registers.Add(register);
                 return register;
             }
@@ -183,22 +177,54 @@ namespace STDIC
             public IRegisterType<TInstanceType> Register<TInjectedType, TInstanceType>()
                 where TInstanceType : TInjectedType
             {
-                var register = new Register<TInstanceType>(_resolver, new[] { typeof(TInjectedType) });
+                var register = new Register<TInstanceType>(new[] { typeof(TInjectedType) });
                 _registers.Add(register);
                 return register;
             }
 
             public IRegisterType<TInstanceType> Register<TInstanceType>()
             {
-                var register = new Register<TInstanceType>(_resolver);
+                var register = new Register<TInstanceType>();
                 _registers.Add(register);
                 return register;
             }
 
-            public DiContainer Build()
+            public DiContainer Build(bool verify = false)
             {
-                var registry = new Registry(_registers.ToArray().Select(register => register.Registration));
+                return Build<ReflectionResolver>(verify);
+            }
+
+            public DiContainer Build<TResolver>(bool verify = false) where TResolver : IResolver, new()
+            {
+                return Build(new TResolver(), verify);
+            }
+
+            private DiContainer Build([NotNull] IResolver resolver, bool verify)
+            {
+                var registrations = _registers.Select(register => register.CreateRegistration(resolver, verify))
+                    .ToArray();
                 _registers.Clear();
+                if (verify)
+                {
+                    var contractTypes = registrations
+                        .SelectMany(x => x.ContractTypes).ToArray();
+                    var resolutionFailedTypes = registrations
+                        .SelectMany(x => x.DependentTypes).ToArray()
+                        .Where(
+                            requiredType => !contractTypes.Contains(requiredType) &&
+                                            !(_parentContainer?.ContainsRegistration(requiredType) ?? false)
+                        )
+                        .ToArray();
+
+                    if (resolutionFailedTypes.Length > 0)
+                    {
+                        throw new InvalidOperationException(
+                            $"Dependency resolution failed for ({string.Join(", ", resolutionFailedTypes.Select(x => x.FullName))})."
+                        );
+                    }
+                }
+
+                var registry = new Registry(registrations);
                 return _parentContainer == null
                     ? new DiContainer(registry)
                     : new DiContainer(registry, _parentContainer);
@@ -207,10 +233,11 @@ namespace STDIC
 
         public interface IBuilder
         {
-            IRegisterType<TInstanceType> Register<TInstanceType>(Type[] injectedTypes);
+            IRegisterType<TInstanceType> Register<TInstanceType>(Type[] contractTypes);
             IRegisterType<TInstanceType> Register<TInjectedType, TInstanceType>() where TInstanceType : TInjectedType;
             IRegisterType<TInstanceType> Register<TInstanceType>();
-            DiContainer Build();
+            DiContainer Build(bool verify = false);
+            DiContainer Build<TResolver>(bool verify = false) where TResolver : IResolver, new();
         }
     }
 }
