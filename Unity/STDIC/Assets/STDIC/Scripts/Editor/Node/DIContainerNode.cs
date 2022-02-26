@@ -1,6 +1,5 @@
 // Copyright (c) 2022 COMCREATE. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using STDICEditor.Data;
