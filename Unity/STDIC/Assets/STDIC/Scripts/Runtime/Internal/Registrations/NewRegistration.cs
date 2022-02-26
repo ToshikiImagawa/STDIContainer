@@ -42,7 +42,7 @@ namespace STDIC.Internal.Registrations
         public IEnumerable<Type> DependentTypes { get; }
         public ScopeType ScopeType => _registerInfo.ScopeType;
 
-        public object GetInstance(DiContainer container)
+        public object GetInstance(DIContainer container)
         {
             var constructor = _constructorLazy.Value;
             return constructor.New(constructor.GetParameterTypes().Select(container.Resolve).ToArray());

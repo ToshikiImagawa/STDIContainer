@@ -30,7 +30,7 @@ namespace STDIC.Internal.Registrations
         public IEnumerable<Type> DependentTypes => Array.Empty<Type>();
         public ScopeType ScopeType => _registerInfo.ScopeType;
 
-        public object GetInstance(DiContainer container)
+        public object GetInstance(DIContainer container)
         {
             if (_isFactoryInitialized) return _factory.Create();
             _isFactoryInitialized = true;

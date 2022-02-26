@@ -4,7 +4,7 @@ namespace STDIC
 {
     public interface IFactory
     {
-        void Init(DiContainer container);
+        void Init(DIContainer container);
     }
 
     public interface IFactory<out T> : IFactory

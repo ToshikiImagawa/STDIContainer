@@ -18,15 +18,20 @@ namespace STDIC.Internal
         public IEnumerable<Type> DependentTypes { get; }
 
         /// <summary>
+        /// インスタンスの型
+        /// </summary>
+        Type InstanceType { get; }
+
+        /// <summary>
         /// スコープ
         /// </summary>
         public ScopeType ScopeType { get; }
 
         /// <summary>
-        /// 
+        /// インスタンスの取得
         /// </summary>
         /// <param name="container"></param>
         /// <returns></returns>
-        public object GetInstance(DiContainer container);
+        public object GetInstance(DIContainer container);
     }
 }

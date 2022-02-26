@@ -1,7 +1,9 @@
 {
     "name": "STDICEditor",
     "rootNamespace": "STDICEditor",
-    "references": [],
+    "references": [
+        "GUID:8a66dffe8173448a2a769ac5075f95d9"
+    ],
     "includePlatforms": [
         "Editor"
     ],

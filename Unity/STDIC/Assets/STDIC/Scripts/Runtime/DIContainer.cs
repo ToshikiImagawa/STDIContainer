@@ -9,35 +9,47 @@ using STDIC.Internal.Reflection;
 
 namespace STDIC
 {
-    public class DiContainer : IDisposable
+    // ReSharper disable once InconsistentNaming
+    public class DIContainer : IDisposable
     {
-        private DiContainer _rootContainer;
-        private DiContainer _parentContainer;
+        private DIContainer _rootContainer;
+        private DIContainer _parentContainer;
         private readonly IRegistry _registry;
+        private readonly IResolver _resolver;
         private readonly ManagedHashTable<IRegistration, Lazy<object>> _sharedInstance;
 
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
         private bool _disposed;
         private readonly object _lockObj = new object();
 
-        private DiContainer(
-            [NotNull] IRegistry registry
+        private DIContainer(
+            [CanBeNull] string label,
+            [NotNull] IRegistry registry,
+            [NotNull] IResolver resolver
         )
         {
             _registry = registry;
+            _resolver = resolver;
             _rootContainer = this;
             _sharedInstance = new ManagedHashTable<IRegistration, Lazy<object>>();
+            Label = label ?? string.Empty;
         }
 
-        private DiContainer(
+        private DIContainer(
+            [CanBeNull] string label,
             [NotNull] IRegistry registry,
-            [NotNull] DiContainer parentContainer
-        ) : this(registry)
+            [NotNull] IResolver resolver,
+            [NotNull] DIContainer parentContainer) : this(label, registry, resolver)
         {
             _rootContainer = parentContainer._rootContainer;
             _parentContainer = parentContainer;
             _rootContainer._disposables.Add(this);
         }
+
+#if UNITY_EDITOR
+        public string Id { get; } = Guid.NewGuid().ToString();
+#endif
+        public string Label { get; }
 
         [NotNull]
         public T Resolve<T>()
@@ -49,54 +61,32 @@ namespace STDIC
         // ReSharper disable once MemberCanBePrivate.Global
         public object Resolve(Type type)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(DiContainer));
+            if (_disposed) throw new ObjectDisposedException(nameof(DIContainer));
             var registration = GetRegistration(type);
-            switch (registration.ScopeType)
-            {
-                case ScopeType.Transient:
-                    return registration.GetInstance(this);
-                case ScopeType.Single:
-                    if (_parentContainer is null)
-                    {
-                        _rootContainer.Resolve(registration);
-                    }
-
-                    var sharedInstance = _rootContainer?._sharedInstance ?? _sharedInstance;
-                    return sharedInstance
-                        .GetOrAddValue(registration, new Lazy<object>(() => registration.GetInstance(this)))
-                        .Value;
-                case ScopeType.Cashed:
-                    return _sharedInstance
-                        .GetOrAddValue(registration, new Lazy<object>(() => registration.GetInstance(this)))
-                        .Value;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return Resolve(registration);
         }
+
+        private static ReflectionResolver _reflectionResolver;
 
         public static IBuilder CreateBuilder()
         {
-            return new Builder();
+            return new Builder(_reflectionResolver ??= new ReflectionResolver());
         }
 
         public IBuilder CreateChildBuilder()
         {
-            return new Builder(this);
+            return new Builder(_resolver, this);
         }
 
         private object Resolve([NotNull] IRegistration registration)
         {
-            switch (registration.ScopeType)
+            return registration.ScopeType switch
             {
-                case ScopeType.Transient:
-                    return registration.GetInstance(this);
-                case ScopeType.Single:
-                    return _rootContainer.GetOrCreateSharedInstance(registration);
-                case ScopeType.Cashed:
-                    return GetOrCreateSharedInstance(registration);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                ScopeType.Transient => registration.GetInstance(this),
+                ScopeType.Single => _rootContainer.GetOrCreateSharedInstance(registration),
+                ScopeType.Cashed => GetOrCreateSharedInstance(registration),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         private object GetOrCreateSharedInstance([NotNull] IRegistration registration)
@@ -138,7 +128,7 @@ namespace STDIC
             Dispose(true);
         }
 
-        ~DiContainer()
+        ~DIContainer()
         {
             Dispose(false);
         }
@@ -157,13 +147,15 @@ namespace STDIC
             }
         }
 
-        private class Builder : IBuilder
+        internal class Builder : IBuilder
         {
-            [CanBeNull] private readonly DiContainer _parentContainer;
+            [CanBeNull] private readonly DIContainer _parentContainer;
             private readonly List<IRegister> _registers = new List<IRegister>();
+            private readonly IResolver _resolver;
 
-            public Builder(DiContainer parentContainer = null)
+            public Builder(IResolver resolver, DIContainer parentContainer = null)
             {
+                _resolver = resolver;
                 _parentContainer = parentContainer;
             }
 
@@ -189,19 +181,13 @@ namespace STDIC
                 return register;
             }
 
-            public DiContainer Build(bool verify = false)
+            public DIContainer Build(
+                string label = null,
+                bool verify = false
+            )
             {
-                return Build<ReflectionResolver>(verify);
-            }
-
-            public DiContainer Build<TResolver>(bool verify = false) where TResolver : IResolver, new()
-            {
-                return Build(new TResolver(), verify);
-            }
-
-            private DiContainer Build([NotNull] IResolver resolver, bool verify)
-            {
-                var registrations = _registers.Select(register => register.CreateRegistration(resolver, verify))
+                var registrations = _registers
+                    .Select(register => register.CreateRegistration(_resolver, verify))
                     .ToArray();
                 _registers.Clear();
                 if (verify)
@@ -225,9 +211,19 @@ namespace STDIC
                 }
 
                 var registry = new Registry(registrations);
-                return _parentContainer == null
-                    ? new DiContainer(registry)
-                    : new DiContainer(registry, _parentContainer);
+                var container = _parentContainer == null
+                    ? new DIContainer(label, registry, _resolver)
+                    : new DIContainer(label, registry, _resolver, _parentContainer);
+
+#if UNITY_EDITOR
+                DependencyTreeGraphHelper.Instance.OnNext(
+                    container.Id,
+                    container.Label,
+                    _parentContainer?.Id,
+                    registrations
+                );
+#endif
+                return container;
             }
         }
 
@@ -236,8 +232,27 @@ namespace STDIC
             IRegisterType<TInstanceType> Register<TInstanceType>(Type[] contractTypes);
             IRegisterType<TInstanceType> Register<TInjectedType, TInstanceType>() where TInstanceType : TInjectedType;
             IRegisterType<TInstanceType> Register<TInstanceType>();
-            DiContainer Build(bool verify = false);
-            DiContainer Build<TResolver>(bool verify = false) where TResolver : IResolver, new();
+
+            DIContainer Build(
+                string label = null,
+                bool verify = false
+            );
+        }
+    }
+
+    // ReSharper disable once InconsistentNaming
+    public static class DIContainer<TResolver> where TResolver : IResolver, new()
+    {
+        private static readonly TResolver ResolverCache;
+
+        static DIContainer()
+        {
+            ResolverCache = new TResolver();
+        }
+
+        public static DIContainer.IBuilder CreateBuilder()
+        {
+            return new DIContainer.Builder(ResolverCache);
         }
     }
 }

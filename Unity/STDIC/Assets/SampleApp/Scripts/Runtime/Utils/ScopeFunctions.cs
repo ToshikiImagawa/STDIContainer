@@ -11,10 +11,5 @@ namespace SampleApp.Utils
             block(self);
             return self;
         }
-
-        public static TResult Let<T, TResult>(this T self, Func<T, TResult> selector)
-        {
-            return selector(self);
-        }
     }
 }

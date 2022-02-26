@@ -18,14 +18,14 @@ namespace SampleApp
             Instance = new ToDoContainer();
         }
 
-        public readonly DiContainer Container = DiContainer
+        public readonly DIContainer Container = DIContainer<GeneratedResolver>
             .CreateBuilder()
             .Also(it =>
             {
                 it.Register<LocalDataBaseHelper>()
                     .FromNew()
                     .AsSingle();
-            }).Build(true)
+            }).Build("HelperContainer", true)
             .CreateChildBuilder()
             .Also(it =>
             {
@@ -36,12 +36,12 @@ namespace SampleApp
                     .FromNew()
                     .AsSingle();
             })
-            .Build(true)
+            .Build("RepositoryContainer", true)
             .CreateChildBuilder()
             .Also(it =>
             {
                 it.Register<IToDoService, ToDoService>()
                     .FromNew();
-            }).Build(true);
+            }).Build(verify: true);
     }
 }
