@@ -83,18 +83,18 @@ namespace STDIC
             return registration.ScopeType switch
             {
                 ScopeType.Transient => registration.GetInstance(this),
-                ScopeType.Single => _rootContainer.GetOrCreateSharedInstance(registration),
-                ScopeType.Cashed => GetOrCreateSharedInstance(registration),
+                ScopeType.Single => _rootContainer.GetOrCreateSharedInstance(registration, this),
+                ScopeType.Cashed => GetOrCreateSharedInstance(registration, this),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
 
-        private object GetOrCreateSharedInstance([NotNull] IRegistration registration)
+        private object GetOrCreateSharedInstance([NotNull] IRegistration registration, DIContainer callContainer)
         {
             return _sharedInstance
                 .GetOrAddValue(
                     registration,
-                    new Lazy<object>(() => registration.GetInstance(this)))
+                    new Lazy<object>(() => registration.GetInstance(callContainer)))
                 .Value;
         }
 
