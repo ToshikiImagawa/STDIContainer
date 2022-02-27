@@ -1,0 +1,49 @@
+import 'lanes.rb'
+
+skip_docs # skip generate fastlane README.md
+
+before_all do |lane, options|
+  generator_set_parameters(lane_context, options, GENERATOR_PARAMS)
+  generator_set_parameters(lane_context, options, GENERATOR_BUILD_PARAMS)
+  FastlaneCore::PrintTable.print_values(config: lane_context, hide_keys: [], title: "Build Configuration")
+end
+
+error do |lane, exception, options|
+  if is_ci?
+    p "error #{lane}: #{exception}"
+  end
+end
+
+after_all do |lane, options|
+
+end
+
+desc "[STDIC ResolverGenerator] Build Generator"
+lane :generator_build do |options|
+  lane_generator_build(lane_context)
+end
+
+desc "[STDIC ResolverGenerator] Run Generator"
+lane :generator_run do |options|
+  lane_generator_run(lane_context)
+end
+
+desc "[STDIC ResolverGenerator] UnitTest Generator"
+lane :generator_test do |options|
+  lane_generator_test(lane_context)
+end
+
+desc "[STDIC ResolverGeneratorr] Build and UnitTest Generator"
+lane :generator_build_and_test do |options|
+  lane_generator_build_and_test(lane_context)
+end
+
+desc "[STDIC ResolverGenerator] Build and Run Generator"
+lane :generator_build_and_run do |options|
+  lane_generator_build_and_run(lane_context)
+end
+
+desc "[STDIC ResolverGenerator] Publish Generator"
+lane :generator_publish do |options|
+  lane_generator_publish(lane_context)
+end

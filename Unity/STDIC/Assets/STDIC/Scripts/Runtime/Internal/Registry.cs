@@ -14,21 +14,23 @@ namespace STDIC.Internal
         {
             _registrationHashTable = new TypeKeyHashTable<IRegistration>(
                 registrations.SelectMany(registration =>
-                    registration.InjectedTypes.Select(injectedType =>
-                        (injectedType, registration)
+                    registration.ContractTypes.Select(contractType =>
+                        (contractType, registration)
                     )
                 )
             );
         }
 
-        public bool TryGetRegistration(Type injectedType, out IRegistration registration)
+        public IEnumerable<IRegistration> Registrations => _registrationHashTable.Values;
+
+        public bool TryGetRegistration(Type contractType, out IRegistration registration)
         {
-            return _registrationHashTable.TryGetValue(injectedType, out registration);
+            return _registrationHashTable.TryGetValue(contractType, out registration);
         }
 
-        public bool Contains(Type injectedType)
+        public bool Contains(Type contractType)
         {
-            return _registrationHashTable.TryGetValue(injectedType, out _);
+            return _registrationHashTable.TryGetValue(contractType, out _);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace STDIC
     public interface IRegister
     {
         internal RegisterInfo RegisterInfo { get; }
-        internal IRegistration Registration { get; }
+        internal IRegistration CreateRegistration(IResolver resolver, bool verify);
     }
 
     public interface IRegisterLazy : IRegister

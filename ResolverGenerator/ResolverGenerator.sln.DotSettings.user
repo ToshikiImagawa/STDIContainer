@@ -1,0 +1,9 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=23fb713c_002D28e9_002D4291_002Dbd67_002D58955b82dc0d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from TypeCollectorTests.cs" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;ProjectFile&gt;ED86AD97-A83A-4046-8B33-DA0333A81748/f:TypeCollectorTests.cs&lt;/ProjectFile&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d9f4b520_002Db7f1_002D4bb1_002D8edc_002D6dbbe10ab345/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TypeCollectorTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::ED86AD97-A83A-4046-8B33-DA0333A81748::.NETCoreApp,Version=v3.1::ResolverGenerator.Tests.TypeCollectorTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

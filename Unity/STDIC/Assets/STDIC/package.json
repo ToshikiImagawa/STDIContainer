@@ -1,0 +1,9 @@
+{
+    "name": "com.comcreate-info.stdic",
+    "displayName": "STDIC",
+    "version": "1.0.0",
+    "unity": "2020.3",
+    "description": "This is Static tree DIContainer Package.",
+    "keywords": ["Script", "Test"],
+    "dependencies": { }
+}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace STDIC.Internal.Registrations
@@ -11,18 +12,25 @@ namespace STDIC.Internal.Registrations
 
         public FactoryRegistration(
             RegisterInfo registerInfo,
-            [NotNull] IFactory<T> factory
+            [NotNull] IFactory<T> factory,
+            bool verify
         )
         {
+            if (verify)
+            {
+                // pass through
+            }
+
             _registerInfo = registerInfo;
             _factory = factory;
         }
 
-        public Type[] InjectedTypes => _registerInfo.InjectedTypes;
+        public IEnumerable<Type> ContractTypes => _registerInfo.ContractTypes;
         public Type InstanceType => _registerInfo.InstanceType;
+        public IEnumerable<Type> DependentTypes => Array.Empty<Type>();
         public ScopeType ScopeType => _registerInfo.ScopeType;
 
-        public object GetInstance(DiContainer container)
+        public object GetInstance(DIContainer container)
         {
             if (_isFactoryInitialized) return _factory.Create();
             _isFactoryInitialized = true;

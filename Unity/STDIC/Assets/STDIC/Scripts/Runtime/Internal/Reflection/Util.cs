@@ -21,11 +21,6 @@ namespace STDIC.Internal.Reflection
             return self.GetAllConstructors().Where(info => info.GetCustomAttribute<InjectAttribute>() != null);
         }
 
-        public static ConstructorInfo GetDefaultConstructors([NotNull] this Type self)
-        {
-            return self.GetConstructor(Type.EmptyTypes);
-        }
-
         private static IEnumerable<ConstructorInfo> GetAllConstructors([NotNull] this Type self)
         {
             return self.GetConstructors(ALL_INSTANCE_BINDING_FLAGS);

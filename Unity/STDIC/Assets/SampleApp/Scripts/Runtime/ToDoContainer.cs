@@ -4,6 +4,7 @@ using SampleApp.Domain.Repository;
 using SampleApp.Domain.Service;
 using SampleApp.Infrastructure.Helper;
 using SampleApp.Infrastructure.Repository;
+using SampleApp.Utils;
 using STDIC;
 
 namespace SampleApp
@@ -17,16 +18,30 @@ namespace SampleApp
             Instance = new ToDoContainer();
         }
 
-        public readonly DiContainer Container;
-
-        private ToDoContainer()
-        {
-            var builder = DiContainer.CreateBuilder();
-            builder.Register<IToDoService, ToDoService>().FromNew();
-            builder.Register<IToDoRepository, ToDoLocalRepository>().FromNew().AsSingle();
-            builder.Register<ITodoEventRepository, TodoEventRepository>().FromNew().AsSingle();
-            builder.Register<LocalDataBaseHelper>().FromInstance(new LocalDataBaseHelper()).AsSingle();
-            Container = builder.Build();
-        }
+        public readonly DIContainer Container = DIContainer<GeneratedResolver>
+            .CreateBuilder()
+            .Also(it =>
+            {
+                it.Register<LocalDataBaseHelper>()
+                    .FromNew()
+                    .AsSingle();
+            }).Build("HelperContainer", true)
+            .CreateChildBuilder()
+            .Also(it =>
+            {
+                it.Register<ITodoEventRepository, TodoEventRepository>()
+                    .FromInstance(new TodoEventRepository())
+                    .AsSingle();
+                it.Register<IToDoRepository, ToDoLocalRepository>()
+                    .FromNew()
+                    .AsSingle();
+            })
+            .Build("RepositoryContainer", true)
+            .CreateChildBuilder()
+            .Also(it =>
+            {
+                it.Register<IToDoService, ToDoService>()
+                    .FromNew();
+            }).Build(verify: true);
     }
 }
