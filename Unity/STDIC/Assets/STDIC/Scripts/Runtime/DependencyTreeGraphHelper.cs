@@ -51,7 +51,6 @@ namespace STDIC
         )
         {
             var value = new ContainerData(id, label, parentId, registrations);
-            Debug.Log($"[{nameof(DependencyTreeGraphHelper)} {nameof(OnNext)}] Call {value}.");
             foreach (var observer in _observerList)
             {
                 observer.OnNext(value);
