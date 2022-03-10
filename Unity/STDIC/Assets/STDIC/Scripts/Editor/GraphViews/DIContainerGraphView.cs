@@ -52,7 +52,6 @@ namespace STDICEditor.GraphViews
         public sealed override void AddToSelection(ISelectable selectable)
         {
             if (!(selectable is RegistrationNode registrationNode)) return;
-            Debug.Log($"[Selected] {registrationNode.Id}");
             _onSelectedRegistrationNode?.Invoke(registrationNode);
         }
 
