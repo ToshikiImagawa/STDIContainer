@@ -1,9 +1,9 @@
 // Copyright (c) 2022 COMCREATE. All rights reserved.
 
 using System;
-using Newtonsoft.Json;
 using SampleApp.Model;
 using STDIC;
+using Unity.Plastic.Newtonsoft.Json;
 using UnityEngine;
 
 namespace SampleApp.Infrastructure.Helper
